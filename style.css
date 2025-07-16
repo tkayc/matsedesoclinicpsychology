@@ -1,4 +1,4 @@
-/* style.css - Optimized for Mobile Responsiveness */
+/* style.css */
 
 body {
   margin: 0;
@@ -8,32 +8,50 @@ body {
 }
 
 header {
-  background-color: #F0E4D3;
+  background-color: #F0E4D3; /* purple shade */
   color: black;
   padding: 20px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
 }
 
 header h1 {
   margin: 0;
-  font-size: 1.8em;
+  font-size: 1.5em;
   color: black;
-  font-family: 'Playfair Display', serif;
-  text-align: center;
+  font-family: Playfair Display;
 }
 
 nav {
   flex: 1;
   text-align: center;
-  margin-top: 10px;
+  
 }
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  flex-wrap: wrap;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-img {
+  height: 50px;
+  width: auto;
+}
+
 
 nav a {
   color: black;
-  margin: 0 15px;
+  margin: 0 20px;
   text-decoration: none;
 }
 
@@ -42,13 +60,13 @@ nav a:hover {
 }
 
 .hero {
-  margin: 20px;
+  margin: 20px; /* 5cm side spacing */
   margin-top: 30px;
 }
 
 .hero img {
   width: 100%;
-  height: auto;
+  height: 300px;
   object-fit: cover;
   display: block;
   border-radius: 8px;
@@ -70,31 +88,40 @@ footer a {
   color: #32CD32;
   margin: 0 10px;
   text-decoration: none;
+ 
 }
 
 footer a:hover {
   text-decoration: underline;
 }
 
+@media (max-width: 768px) {
+  .hero,
+  main {
+    margin: 20px 20px;
+  }
+}
+
 .booking-container {
   display: flex;
   gap: 20px;
   align-items: stretch;
-  flex-wrap: wrap;
 }
 
 .booking-image,
 .booking-form {
-  flex: 1;
-  margin: 10px 0;
+  flex: 1; /* each takes 50% of the width because there are two of them */
+  margin-left: 4px;
+  margin-right: 8px;
 }
 
 .booking-image img {
   width: 100%;
-  height: auto;
-  object-fit: cover;
+  height: 100%;
+  object-fit: cover; /* fill the area nicely */
   border-radius: 8px;
-  margin: 0;
+  margin: 20px;
+  
 }
 
 .booking-form form input,
@@ -102,7 +129,7 @@ footer a:hover {
   width: 100%;
   padding: 10px;
   margin-top: 5px;
-  border-radius: 10px;
+  border-radius: 10px;  /* rounded corners */
   border: 1px solid #ccc;
   box-sizing: border-box;
 }
@@ -112,21 +139,21 @@ footer a:hover {
   color: white;
   border: none;
   padding: 12px;
-  width: 100%;
+  width: 100%;              /* makes the button full width */
   text-align: center;
   font-size: 1em;
-  border-radius: 10px;
+  border-radius: 10px;      /* rounded button */
   cursor: pointer;
 }
 
 .book-btn:hover {
-  background-color: #28a428;
+  background-color: #28a428;  /* darker green on hover */
 }
 
 .footer-multi {
   background-color: #4B0082;
   color: white;
-  padding: 40px 5vw;
+  padding: 40px 5cm;
 }
 
 .footer-container {
@@ -138,7 +165,7 @@ footer a:hover {
 .footer-column {
   flex: 1;
   min-width: 200px;
-  margin: 20px 10px;
+  margin-right: 20px;
 }
 
 .footer-column h4 {
@@ -174,18 +201,75 @@ footer a:hover {
   color: white;
 }
 
-/* ABOUT PAGE */
-.about-section {
-  padding: 40px 5vw;
+.contact-details {
+  background-color: #f0f0f0;
+  padding: 30px 5cm;
+}
+
+.contact-container {
   display: flex;
+  justify-content: space-between;
   flex-wrap: wrap;
+}
+
+.contact-column {
+  flex: 1;
+  min-width: 200px;
+  margin-right: 20px;
+}
+
+.contact-column h3 {
+  border-bottom: 2px solid #32CD32;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+
+
+/*=====main testing=====*/
+
+.booking-container {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+.booking-image,
+.booking-form {
+  flex: 1;
+}
+
+
+/*=== about page ====*/
+
+.about-section {
+  padding: 50px;
+ justify-content: center;
+}
+
+.about-top {
+  display: flex;
   gap: 40px;
-  justify-content: center;
-  align-items: flex-start;
+  flex-wrap: wrap; 
+  margin-bottom: 30px;
+  align-items: center;
+ 
+  /* ✅ Background image */
+  background-image: url("images/logo-blur.jpg"); /* replace with your image path */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  /* ✅ Overlay for readability */
+  background-color: rgba(0, 0, 0, 0.5); /* darkens the image */
+  background-blend-mode: darken;
+
+  /* ✅ Optional shadow for text separation */
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 .image-container {
-  flex: 1 1 300px;
+  position: relative;  
+  flex: 1;
   max-width: 600px;
 }
 
@@ -195,22 +279,18 @@ footer a:hover {
   border-radius: 8px;
 }
 
+
 .quote-text {
-  flex: 1 1 300px;
+  flex: 1;
   max-width: 800px;
   padding: 60px 20px;
-  font-size: 2rem;
+  font-size: 3.6rem;
   font-style: italic;
   text-align: left;
   border-radius: 8px;
   color: #fff;
-  background-image: url("images/logo-blur.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: rgba(0, 0, 0, 0.5);
-  background-blend-mode: darken;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+
+  
 }
 
 .about-details {
@@ -232,18 +312,20 @@ footer a:hover {
   line-height: 1.5;
 }
 
-/* PSYCHO PAGE */
+
+/*psycho page */ 
+
 .text-image-row {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 30px;
-  flex-wrap: wrap;
-  padding: 20px;
+  flex-wrap: wrap; /* Makes it responsive on small screens */
+  padding: 20px 20px;
 }
 
 .text-content {
-  flex: 1 1 300px;
+  flex: 1;
   max-width: 700px;
 }
 
@@ -257,11 +339,11 @@ footer a:hover {
   font-size: 1.1rem;
   line-height: 1.6;
   color: #555;
-  font-family: Lora, serif;
+  font-family: Lora;
 }
 
 .image-content {
-  flex: 1 1 300px;
+  flex: 1;
   max-width: 400px;
 }
 
@@ -278,48 +360,83 @@ footer a:hover {
   font-size: 1.1rem;
   line-height: 1.6;
   color: #444;
-  font-family: Lora, serif;
+  font-family: Lora;
 }
 
-/* Header Font */
 h1 {
   font-family: 'Playfair Display', serif;
-  font-size: 2.5rem;
+  font-size: 2.5rem; /* adjust as needed */
   color: #333;
 }
 
-/* MEDIA QUERIES FOR SMALL DEVICES */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   header {
-    flex-direction: column;
-    align-items: center;
-    font-size: 1.5rem;  /* Smaller font size for mobile */
-    padding: 15px 20px; /* Less padding */
+    padding: 10px 15px;
   }
 
-  nav {
-    margin-top: 10px;
+  header h1,
+  .brand-logo h1 {
+    font-size: 1.2rem;
+  }
+
+  .logo-img {
+    max-width: 80px;
+    height: auto;
+  }
+
+  .hero,
+  main {
+    margin: 15px 10px;
   }
 
   .quote-text {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
+    padding: 30px 10px;
     text-align: center;
   }
 
-  .footer-container {
-    flex-direction: column;
-    align-items: center;
+  .about-section,
+  .about-details,
+  .booking-container,
+  .text-image-row {
+    padding: 15px 10px;
   }
 
+  .booking-container,
   .text-image-row {
     flex-direction: column;
   }
 
-  .about-section {
-    flex-direction: column;
+  .booking-image,
+  .booking-form,
+  .text-content,
+  .image-content {
+    max-width: 100%;
   }
 
-  .booking-container {
+  .footer-multi,
+  .contact-details {
+    padding: 20px;
+  }
+
+  .footer-container,
+  .contact-container {
     flex-direction: column;
+    gap: 20px;
+  }
+
+  .footer-column,
+  .contact-column {
+    margin-right: 0;
+  }
+
+  .about-details h3 {
+    font-size: 1.1rem;
+  }
+
+  .about-details p,
+  .text-content p,
+  .custom-list {
+    font-size: 1rem;
   }
 }
