@@ -1,4 +1,4 @@
-/* style.css */
+/* style.css - Optimized for Mobile Responsiveness */
 
 body {
   margin: 0;
@@ -8,50 +8,32 @@ body {
 }
 
 header {
-  background-color: #F0E4D3; /* purple shade */
+  background-color: #F0E4D3;
   color: black;
   padding: 20px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 header h1 {
   margin: 0;
-  font-size: 1.5em;
+  font-size: 1.8em;
   color: black;
-  font-family: Playfair Display;
+  font-family: 'Playfair Display', serif;
+  text-align: center;
 }
 
 nav {
   flex: 1;
   text-align: center;
-  
+  margin-top: 10px;
 }
-
-.site-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  flex-wrap: wrap;
-}
-
-.brand-logo {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.logo-img {
-  height: 50px;
-  width: auto;
-}
-
 
 nav a {
   color: black;
-  margin: 0 20px;
+  margin: 0 15px;
   text-decoration: none;
 }
 
@@ -60,13 +42,13 @@ nav a:hover {
 }
 
 .hero {
-  margin: 20px; /* 5cm side spacing */
+  margin: 20px;
   margin-top: 30px;
 }
 
 .hero img {
   width: 100%;
-  height: 300px;
+  height: auto;
   object-fit: cover;
   display: block;
   border-radius: 8px;
@@ -88,40 +70,31 @@ footer a {
   color: #32CD32;
   margin: 0 10px;
   text-decoration: none;
- 
 }
 
 footer a:hover {
   text-decoration: underline;
 }
 
-@media (max-width: 768px) {
-  .hero,
-  main {
-    margin: 20px 20px;
-  }
-}
-
 .booking-container {
   display: flex;
   gap: 20px;
   align-items: stretch;
+  flex-wrap: wrap;
 }
 
 .booking-image,
 .booking-form {
-  flex: 1; /* each takes 50% of the width because there are two of them */
-  margin-left: 4px;
-  margin-right: 8px;
+  flex: 1;
+  margin: 10px 0;
 }
 
 .booking-image img {
   width: 100%;
-  height: 100%;
-  object-fit: cover; /* fill the area nicely */
+  height: auto;
+  object-fit: cover;
   border-radius: 8px;
-  margin: 20px;
-  
+  margin: 0;
 }
 
 .booking-form form input,
@@ -129,7 +102,7 @@ footer a:hover {
   width: 100%;
   padding: 10px;
   margin-top: 5px;
-  border-radius: 10px;  /* rounded corners */
+  border-radius: 10px;
   border: 1px solid #ccc;
   box-sizing: border-box;
 }
@@ -139,21 +112,21 @@ footer a:hover {
   color: white;
   border: none;
   padding: 12px;
-  width: 100%;              /* makes the button full width */
+  width: 100%;
   text-align: center;
   font-size: 1em;
-  border-radius: 10px;      /* rounded button */
+  border-radius: 10px;
   cursor: pointer;
 }
 
 .book-btn:hover {
-  background-color: #28a428;  /* darker green on hover */
+  background-color: #28a428;
 }
 
 .footer-multi {
   background-color: #4B0082;
   color: white;
-  padding: 40px 5cm;
+  padding: 40px 5vw;
 }
 
 .footer-container {
@@ -165,7 +138,7 @@ footer a:hover {
 .footer-column {
   flex: 1;
   min-width: 200px;
-  margin-right: 20px;
+  margin: 20px 10px;
 }
 
 .footer-column h4 {
@@ -201,75 +174,18 @@ footer a:hover {
   color: white;
 }
 
-.contact-details {
-  background-color: #f0f0f0;
-  padding: 30px 5cm;
-}
-
-.contact-container {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-
-.contact-column {
-  flex: 1;
-  min-width: 200px;
-  margin-right: 20px;
-}
-
-.contact-column h3 {
-  border-bottom: 2px solid #32CD32;
-  padding-bottom: 5px;
-  margin-bottom: 10px;
-}
-
-
-
-/*=====main testing=====*/
-
-.booking-container {
-  display: flex;
-  gap: 20px;
-  align-items: stretch;
-}
-.booking-image,
-.booking-form {
-  flex: 1;
-}
-
-
-/*=== about page ====*/
-
+/* ABOUT PAGE */
 .about-section {
-  padding: 50px;
- justify-content: center;
-}
-
-.about-top {
+  padding: 40px 5vw;
   display: flex;
+  flex-wrap: wrap;
   gap: 40px;
-  flex-wrap: wrap; 
-  margin-bottom: 30px;
-  align-items: center;
- 
-  /* ✅ Background image */
-  background-image: url("images/logo-blur.jpg"); /* replace with your image path */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-
-  /* ✅ Overlay for readability */
-  background-color: rgba(0, 0, 0, 0.5); /* darkens the image */
-  background-blend-mode: darken;
-
-  /* ✅ Optional shadow for text separation */
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .image-container {
-  position: relative;  
-  flex: 1;
+  flex: 1 1 300px;
   max-width: 600px;
 }
 
@@ -279,18 +195,22 @@ footer a:hover {
   border-radius: 8px;
 }
 
-
 .quote-text {
-  flex: 1;
+  flex: 1 1 300px;
   max-width: 800px;
   padding: 60px 20px;
-  font-size: 3.6rem;
+  font-size: 2rem;
   font-style: italic;
   text-align: left;
   border-radius: 8px;
   color: #fff;
-
-  
+  background-image: url("images/logo-blur.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: rgba(0, 0, 0, 0.5);
+  background-blend-mode: darken;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 .about-details {
@@ -312,20 +232,18 @@ footer a:hover {
   line-height: 1.5;
 }
 
-
-/*psycho page */ 
-
+/* PSYCHO PAGE */
 .text-image-row {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 30px;
-  flex-wrap: wrap; /* Makes it responsive on small screens */
-  padding: 20px 20px;
+  flex-wrap: wrap;
+  padding: 20px;
 }
 
 .text-content {
-  flex: 1;
+  flex: 1 1 300px;
   max-width: 700px;
 }
 
@@ -339,11 +257,11 @@ footer a:hover {
   font-size: 1.1rem;
   line-height: 1.6;
   color: #555;
-  font-family: Lora;
+  font-family: Lora, serif;
 }
 
 .image-content {
-  flex: 1;
+  flex: 1 1 300px;
   max-width: 400px;
 }
 
@@ -360,20 +278,46 @@ footer a:hover {
   font-size: 1.1rem;
   line-height: 1.6;
   color: #444;
-  font-family: Lora;
+  font-family: Lora, serif;
 }
 
+/* Header Font */
 h1 {
   font-family: 'Playfair Display', serif;
-  font-size: 2.5rem; /* adjust as needed */
+  font-size: 2.5rem;
   color: #333;
 }
 
+/* MEDIA QUERIES FOR SMALL DEVICES */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: center;
+  }
 
+  nav {
+    margin-top: 10px;
+  }
 
+  .quote-text {
+    font-size: 1.5rem;
+    text-align: center;
+  }
 
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+  }
 
+  .text-image-row {
+    flex-direction: column;
+  }
 
+  .about-section {
+    flex-direction: column;
+  }
 
-
-
+  .booking-container {
+    flex-direction: column;
+  }
+}
