@@ -1,0 +1,379 @@
+/* style.css */
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f8f8f8;
+  color: #333;
+}
+
+header {
+  background-color: #F0E4D3; /* purple shade */
+  color: black;
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.5em;
+  color: black;
+  font-family: Playfair Display;
+}
+
+nav {
+  flex: 1;
+  text-align: center;
+  
+}
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  flex-wrap: wrap;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-img {
+  height: 50px;
+  width: auto;
+}
+
+
+nav a {
+  color: black;
+  margin: 0 20px;
+  text-decoration: none;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+.hero {
+  margin: 20px; /* 5cm side spacing */
+  margin-top: 30px;
+}
+
+.hero img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+}
+
+main {
+  margin: 20px;
+}
+
+footer {
+  background-color: #4B0082;
+  color: white;
+  padding: 20px 30px;
+  text-align: center;
+  margin-top: 30px;
+}
+
+footer a {
+  color: #32CD32;
+  margin: 0 10px;
+  text-decoration: none;
+ 
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .hero,
+  main {
+    margin: 20px 20px;
+  }
+}
+
+.booking-container {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.booking-image,
+.booking-form {
+  flex: 1; /* each takes 50% of the width because there are two of them */
+  margin-left: 4px;
+  margin-right: 8px;
+}
+
+.booking-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* fill the area nicely */
+  border-radius: 8px;
+  margin: 20px;
+  
+}
+
+.booking-form form input,
+.booking-form form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 10px;  /* rounded corners */
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.book-btn {
+  background-color: #32CD32;
+  color: white;
+  border: none;
+  padding: 12px;
+  width: 100%;              /* makes the button full width */
+  text-align: center;
+  font-size: 1em;
+  border-radius: 10px;      /* rounded button */
+  cursor: pointer;
+}
+
+.book-btn:hover {
+  background-color: #28a428;  /* darker green on hover */
+}
+
+.footer-multi {
+  background-color: #4B0082;
+  color: white;
+  padding: 40px 5cm;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.footer-column {
+  flex: 1;
+  min-width: 200px;
+  margin-right: 20px;
+}
+
+.footer-column h4 {
+  border-bottom: 2px solid #32CD32;
+  padding-bottom: 5px;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-column ul li {
+  margin: 8px 0;
+}
+
+.footer-column ul li a {
+  color: white;
+  text-decoration: none;
+}
+
+.footer-column ul li a:hover {
+  text-decoration: underline;
+}
+
+.footer-socials a {
+  margin-right: 15px;
+  font-size: 1.5em;
+  color: #32CD32;
+}
+
+.footer-socials a:hover {
+  color: white;
+}
+
+.contact-details {
+  background-color: #f0f0f0;
+  padding: 30px 5cm;
+}
+
+.contact-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.contact-column {
+  flex: 1;
+  min-width: 200px;
+  margin-right: 20px;
+}
+
+.contact-column h3 {
+  border-bottom: 2px solid #32CD32;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+
+
+/*=====main testing=====*/
+
+.booking-container {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+.booking-image,
+.booking-form {
+  flex: 1;
+}
+
+
+/*=== about page ====*/
+
+.about-section {
+  padding: 50px;
+ justify-content: center;
+}
+
+.about-top {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap; 
+  margin-bottom: 30px;
+  align-items: center;
+ 
+  /* ✅ Background image */
+  background-image: url("images/logo-blur.jpg"); /* replace with your image path */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  /* ✅ Overlay for readability */
+  background-color: rgba(0, 0, 0, 0.5); /* darkens the image */
+  background-blend-mode: darken;
+
+  /* ✅ Optional shadow for text separation */
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.image-container {
+  position: relative;  
+  flex: 1;
+  max-width: 600px;
+}
+
+.image-container img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+
+.quote-text {
+  flex: 1;
+  max-width: 800px;
+  padding: 60px 20px;
+  font-size: 3.6rem;
+  font-style: italic;
+  text-align: left;
+  border-radius: 8px;
+  color: #fff;
+
+  
+}
+
+.about-details {
+  text-align: center;
+  width: 90%;
+  background-color: #F0E4D3;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.about-details h3 {
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.about-details p {
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+
+/*psycho page */ 
+
+.text-image-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap; /* Makes it responsive on small screens */
+  padding: 20px 20px;
+}
+
+.text-content {
+  flex: 1;
+  max-width: 700px;
+}
+
+.text-content h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.text-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #555;
+  font-family: Lora;
+}
+
+.image-content {
+  flex: 1;
+  max-width: 400px;
+}
+
+.image-content img {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+}
+
+.custom-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #444;
+  font-family: Lora;
+}
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem; /* adjust as needed */
+  color: #333;
+}
+
+
+
+
+
+
+
+
+
