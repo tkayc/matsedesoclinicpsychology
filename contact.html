@@ -177,6 +177,7 @@
 
   function slotKeyFromStringJS(slotStr) {
     if (!slotStr) return null;
+    slotStr = slotStr.trim(); // remove extra spaces
     const parts = slotStr.split(/[-–—]/);
     if (parts.length < 2) return null;
     const s = parseTimeToMinutesJS(parts[0].trim());
@@ -186,7 +187,7 @@
   }
 </script>
 
-<script>
+<script> 
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyarXZAjjbszmaIZZdF1jjW11Wajg7B8JYx9eNNxattBVcsa8o65SBYtck30MHBWJKf/exec";
 
   const availability = {
