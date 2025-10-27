@@ -189,7 +189,7 @@
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyarXZAjjbszmaIZZdF1jjW11Wajg7B8JYx9eNNxattBVcsa8o65SBYtck30MHBWJKf/exec";
-
+                    
 // Availability ranges for each weekday
 const availability = {
   monday: [{ start: "17:30", end: "18:30" }],
@@ -228,10 +228,18 @@ function formatTime(date) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+// Normalize slot string for comparison
+function normalizeSlotString(s) {
+  return String(s || "").trim().replace(/\s*-\s*/, "-");
+}
+
 // Render slots on the page
 function renderSlots(slots, bookedSlots) {
   const container = document.getElementById("slots");
   container.innerHTML = "<p>Select a time slot:</p>";
+
+  // Normalize booked slots once
+  const bookedNormalized = bookedSlots.map(s => normalizeSlotString(s));
 
   slots.forEach(slot => {
     const btn = document.createElement("button");
@@ -239,7 +247,7 @@ function renderSlots(slots, bookedSlots) {
     btn.textContent = slot;
 
     // Disable and grey if booked
-    if (bookedSlots.includes(slot)) {
+    if (bookedNormalized.includes(normalizeSlotString(slot))) {
       btn.disabled = true;
       btn.style.background = "lightgrey";
       btn.style.cursor = "not-allowed";
