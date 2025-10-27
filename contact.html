@@ -200,6 +200,7 @@
     sunday: [{ start: "15:00", end: "16:00" }],
   };
 
+  // Generate 1-hour slots
   function generateSlots(ranges) {
     let slots = [];
     ranges.forEach((range) => {
@@ -226,6 +227,35 @@
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 
+  function parseTimeToMinutesJS(s) {
+    if (!s && s !== 0) return null;
+    s = String(s).trim();
+    let m = s.match(/(\d{1,2}):(\d{2})/);
+    if (m) return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+    m = s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
+    if (m) {
+      let hh = parseInt(m[1], 10),
+        mm = m[2] ? parseInt(m[2], 10) : 0;
+      const ap = m[3].toLowerCase();
+      if (ap === "am" && hh === 12) hh = 0;
+      if (ap === "pm" && hh < 12) hh += 12;
+      return hh * 60 + mm;
+    }
+    const dt = new Date(s);
+    if (!isNaN(dt)) return dt.getHours() * 60 + dt.getMinutes();
+    return null;
+  }
+
+  function slotKeyFromStringJS(slotStr) {
+    if (!slotStr) return null;
+    const parts = slotStr.split(/[-–—]/);
+    if (parts.length < 2) return null;
+    const s = parseTimeToMinutesJS(parts[0].trim());
+    const e = parseTimeToMinutesJS(parts[1].trim());
+    if (s === null || e === null) return null;
+    return s + "-" + e;
+  }
+
   flatpickr("#datePicker", {
     dateFormat: "Y-m-d",
     minDate: "today",
@@ -243,26 +273,28 @@
         .then((data) => {
           const bookedKeys = data.bookedKeys || [];
           const slotStatus = {};
+
           slots.forEach((slot) => {
             const key = slotKeyFromStringJS(slot);
 
-            // If parsing failed, mark as booked to be safe
+            // Treat parsing failures as booked
             if (!key) {
-            slotStatus[slot] = "booked";
-            return;
+              slotStatus[slot] = "booked";
+              return;
             }
-            
-          // Compare numbers directly instead of strings
-        const isBooked = bookedKeys.some(bk => {
-        const [bkStart, bkEnd] = bk.split("-").map(Number);
-        const [kStart, kEnd] = key.split("-").map(Number);
-        return bkStart === kStart && bkEnd === kEnd;
-        });
 
-        slotStatus[slot] = isBooked ? "booked" : "available";
-      });
-      renderSlots(slotStatus);
-    })
+            // Compare numeric start/end values
+            const isBooked = bookedKeys.some(bk => {
+              const [bkStart, bkEnd] = bk.split("-").map(Number);
+              const [kStart, kEnd] = key.split("-").map(Number);
+              return bkStart === kStart && bkEnd === kEnd;
+            });
+
+            slotStatus[slot] = isBooked ? "booked" : "available";
+          });
+
+          renderSlots(slotStatus);
+        })
         .catch(() => {
           const slotStatus = {};
           slots.forEach((slot) => (slotStatus[slot] = "available"));
@@ -293,6 +325,7 @@
           highlightSelected(btn);
         };
       }
+
       container.appendChild(btn);
     }
   }
@@ -322,6 +355,7 @@
       .catch((err) => alert("Error: " + err));
   });
 </script>
+
 <!--end booking section-->
 
       </main>
