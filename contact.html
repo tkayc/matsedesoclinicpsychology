@@ -187,174 +187,169 @@
   }
 </script>
 
-<script> 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyarXZAjjbszmaIZZdF1jjW11Wajg7B8JYx9eNNxattBVcsa8o65SBYtck30MHBWJKf/exec";
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyarXZAjjbszmaIZZdF1jjW11Wajg7B8JYx9eNNxattBVcsa8o65SBYtck30MHBWJKf/exec";
 
-  const availability = {
-    monday: [{ start: "17:30", end: "18:30" }],
-    tuesday: [{ start: "17:30", end: "18:30" }],
-    wednesday: [{ start: "16:15", end: "18:00" }],
-    thursday: [{ start: "16:15", end: "18:00" }],
-    friday: [{ start: "16:15", end: "18:00" }],
-    saturday: [{ start: "09:00", end: "15:00" }],
-    sunday: [{ start: "15:00", end: "16:00" }],
-  };
+// Define weekly availability
+const availability = {
+  monday: [{ start: "17:30", end: "18:30" }],
+  tuesday: [{ start: "17:30", end: "18:30" }],
+  wednesday: [{ start: "16:15", end: "18:00" }],
+  thursday: [{ start: "16:15", end: "18:00" }],
+  friday: [{ start: "16:15", end: "18:00" }],
+  saturday: [{ start: "09:00", end: "15:00" }],
+  sunday: [{ start: "15:00", end: "16:00" }],
+};
 
-  // Generate 1-hour slots
-  function generateSlots(ranges) {
-    let slots = [];
-    ranges.forEach((range) => {
-      let [sh, sm] = range.start.split(":").map(Number);
-      let [eh, em] = range.end.split(":").map(Number);
+// Convert slot string to minutes
+function parseTimeToMinutes(s) {
+  const m = s.match(/(\d{1,2}):(\d{2})/);
+  if (!m) return null;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
 
-      let start = new Date(0, 0, 0, sh, sm);
-      let end = new Date(0, 0, 0, eh, em);
+// Convert slot string to key "startMinutes-endMinutes"
+function slotKeyFromStringJS(slotStr) {
+  if (!slotStr) return null;
+  const parts = slotStr.split(/[-–—]/);
+  if (parts.length < 2) return null;
+  const s = parseTimeToMinutes(parts[0].trim());
+  const e = parseTimeToMinutes(parts[1].trim());
+  if (s === null || e === null) return null;
+  return s + "-" + e;
+}
 
-      while (start < end) {
-        let slotStart = new Date(start);
-        let slotEnd = new Date(start);
-        slotEnd.setHours(slotEnd.getHours() + 1);
-        if (slotEnd > end) slotEnd = end;
+// Format Date object to HH:MM
+function formatTime(date) {
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 
-        slots.push(formatTime(slotStart) + " - " + formatTime(slotEnd));
-        start = slotEnd;
-      }
-    });
-    return slots;
-  }
+// Generate time slots from ranges
+function generateSlots(ranges) {
+  let slots = [];
+  ranges.forEach((range) => {
+    let [sh, sm] = range.start.split(":").map(Number);
+    let [eh, em] = range.end.split(":").map(Number);
 
-  function formatTime(date) {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  }
+    let start = new Date(0, 0, 0, sh, sm);
+    let end = new Date(0, 0, 0, eh, em);
 
-  function parseTimeToMinutesJS(s) {
-    if (!s && s !== 0) return null;
-    s = String(s).trim();
-    let m = s.match(/(\d{1,2}):(\d{2})/);
-    if (m) return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
-    m = s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
-    if (m) {
-      let hh = parseInt(m[1], 10),
-        mm = m[2] ? parseInt(m[2], 10) : 0;
-      const ap = m[3].toLowerCase();
-      if (ap === "am" && hh === 12) hh = 0;
-      if (ap === "pm" && hh < 12) hh += 12;
-      return hh * 60 + mm;
+    while (start < end) {
+      let slotStart = new Date(start);
+      let slotEnd = new Date(start);
+      slotEnd.setHours(slotEnd.getHours() + 1);
+      if (slotEnd > end) slotEnd = end;
+
+      slots.push(formatTime(slotStart) + " - " + formatTime(slotEnd));
+      start = slotEnd;
     }
-    const dt = new Date(s);
-    if (!isNaN(dt)) return dt.getHours() * 60 + dt.getMinutes();
-    return null;
-  }
-
-  function slotKeyFromStringJS(slotStr) {
-    if (!slotStr) return null;
-    const parts = slotStr.split(/[-–—]/);
-    if (parts.length < 2) return null;
-    const s = parseTimeToMinutesJS(parts[0].trim());
-    const e = parseTimeToMinutesJS(parts[1].trim());
-    if (s === null || e === null) return null;
-    return s + "-" + e;
-  }
-
-  flatpickr("#datePicker", {
-    dateFormat: "Y-m-d",
-    minDate: "today",
-    onChange: function (selectedDates, dateStr) {
-      const day = selectedDates[0]
-        .toLocaleDateString("en-US", { weekday: "long" })
-        .toLowerCase();
-
-      const slots = generateSlots(availability[day] || []);
-      const container = document.getElementById("slots");
-      container.innerHTML = "<p>Loading available slots<span class='spinner'></span></p>";
-
-      fetch(`${SCRIPT_URL}?date=${dateStr}`)
-        .then((res) => res.json())
-        .then((data) => {
-          const bookedKeys = data.bookedKeys || [];
-          const slotStatus = {};
-
-          slots.forEach((slot) => {
-            const key = slotKeyFromStringJS(slot);
-
-            // Treat parsing failures as booked
-            if (!key) {
-              slotStatus[slot] = "booked";
-              return;
-            }
-
-            // Compare numeric start/end values
-            const isBooked = bookedKeys.some(bk => {
-              const [bkStart, bkEnd] = bk.split("-").map(Number);
-              const [kStart, kEnd] = key.split("-").map(Number);
-              return bkStart === kStart && bkEnd === kEnd;
-            });
-
-            slotStatus[slot] = isBooked ? "booked" : "available";
-          });
-
-          renderSlots(slotStatus);
-        })
-        .catch(() => {
-          const slotStatus = {};
-          slots.forEach((slot) => (slotStatus[slot] = "available"));
-          renderSlots(slotStatus);
-        });
-    },
   });
+  return slots;
+}
 
-  function renderSlots(slots) {
-    const container = document.getElementById("slots");
-    container.innerHTML = "<p>Select a time slot:</p>";
+// Render slots in the container
+function renderSlots(slotStatus) {
+  const container = document.getElementById("slots");
+  container.innerHTML = "<p>Select a time slot:</p>";
 
-    for (const [time, status] of Object.entries(slots)) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = time;
-      btn.disabled = status === "booked";
-      btn.style.background = status === "available" ? "green" : "lightgrey";
-      btn.style.color = "white";
-      btn.style.margin = "5px";
-      btn.style.padding = "10px";
-      btn.style.borderRadius = "8px";
-      btn.style.cursor = status === "available" ? "pointer" : "not-allowed";
+  for (const [time, status] of Object.entries(slotStatus)) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = time;
+    btn.disabled = status === "booked";
+    btn.style.background = status === "available" ? "green" : "lightgrey";
+    btn.style.color = "white";
+    btn.style.margin = "5px";
+    btn.style.padding = "10px";
+    btn.style.borderRadius = "8px";
+    btn.style.cursor = status === "available" ? "pointer" : "not-allowed";
 
-      if (status === "available") {
-        btn.onclick = () => {
-          document.getElementById("timeSlot").value = time;
-          highlightSelected(btn);
-        };
-      }
-
-      container.appendChild(btn);
+    if (status === "available") {
+      btn.onclick = () => {
+        document.getElementById("timeSlot").value = time;
+        highlightSelected(btn);
+      };
     }
+    container.appendChild(btn);
   }
+}
 
-  function highlightSelected(selectedBtn) {
-    document.querySelectorAll("#slots button").forEach((btn) => {
-      if (!btn.disabled) btn.style.background = "green";
-    });
-    selectedBtn.style.background = "darkblue";
-  }
+// Highlight selected button
+function highlightSelected(selectedBtn) {
+  document.querySelectorAll("#slots button").forEach((btn) => {
+    if (!btn.disabled) btn.style.background = "green";
+  });
+  selectedBtn.style.background = "darkblue";
+}
 
-  document.getElementById("bookingForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const formData = new FormData(this);
+// Initialize flatpickr date picker
+flatpickr("#datePicker", {
+  dateFormat: "Y-m-d",
+  minDate: "today",
+  onChange: function (selectedDates, dateStr) {
+    if (!selectedDates[0]) return;
 
-    fetch(SCRIPT_URL, { method: "POST", body: formData })
+    const day = selectedDates[0]
+      .toLocaleDateString("en-US", { weekday: "long" })
+      .toLowerCase();
+
+    const slots = generateSlots(availability[day] || []);
+    const container = document.getElementById("slots");
+    container.innerHTML = "<p>Loading available slots<span class='spinner'></span></p>";
+
+    fetch(`${SCRIPT_URL}?date=${dateStr}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          alert("Booking confirmed!");
-          this.reset();
-          document.getElementById("slots").innerHTML = "";
-        } else {
-          alert("Error: " + data.message);
-        }
+        const bookedKeys = data.bookedKeys || [];
+        const slotStatus = {};
+
+        slots.forEach((slot) => {
+          const key = slotKeyFromStringJS(slot);
+
+          if (!key) {
+            slotStatus[slot] = "booked"; // safety fallback
+            return;
+          }
+
+          const isBooked = bookedKeys.some((bk) => {
+            const [bkStart, bkEnd] = bk.split("-").map(Number);
+            const [kStart, kEnd] = key.split("-").map(Number);
+            return bkStart === kStart && bkEnd === kEnd;
+          });
+
+          slotStatus[slot] = isBooked ? "booked" : "available";
+        });
+
+        renderSlots(slotStatus);
       })
-      .catch((err) => alert("Error: " + err));
-  });
+      .catch(() => {
+        const slotStatus = {};
+        slots.forEach((slot) => (slotStatus[slot] = "available"));
+        renderSlots(slotStatus);
+      });
+  },
+});
+
+// Handle form submission
+document.getElementById("bookingForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+
+  fetch(SCRIPT_URL, { method: "POST", body: formData })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Booking confirmed!");
+        this.reset();
+        document.getElementById("slots").innerHTML = "";
+      } else {
+        alert("Error: " + data.message);
+      }
+    })
+    .catch((err) => alert("Error: " + err));
+});
 </script>
+
 
 <!--end booking section-->
 
