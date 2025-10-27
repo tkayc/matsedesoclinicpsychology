@@ -229,8 +229,8 @@ function formatTime(date) {
 }
 
 // Normalize slot string for comparison
-function normalizeSlotString(s) {
-  return String(s || "").trim().replace(/\s*-\s*/, "-");
+function normalizeSlot(slot) {
+  return slot.replace(/\s*[-–—]\s*/g, " - ").trim();
 }
 
 // Render slots on the page
@@ -238,16 +238,19 @@ function renderSlots(slots, bookedSlots) {
   const container = document.getElementById("slots");
   container.innerHTML = "<p>Select a time slot:</p>";
 
-  // Normalize booked slots once
-  const bookedNormalized = bookedSlots.map(s => normalizeSlotString(s));
 
   slots.forEach(slot => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = slot;
 
+
+    const normSlot = normalizeSlot(slot);
+    const isBooked = bookedSlots.some(b => normalizeSlot(b) === normSlot);
+
+
     // Disable and grey if booked
-    if (bookedNormalized.includes(normalizeSlotString(slot))) {
+    if (isBooked) {
       btn.disabled = true;
       btn.style.background = "lightgrey";
       btn.style.cursor = "not-allowed";
