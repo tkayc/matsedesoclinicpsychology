@@ -311,11 +311,7 @@ flatpickr("#datePicker", {
             return;
           }
 
-          const isBooked = bookedKeys.some((bk) => {
-            const [bkStart, bkEnd] = bk.split("-").map(Number);
-            const [kStart, kEnd] = key.split("-").map(Number);
-            return bkStart === kStart && bkEnd === kEnd;
-          });
+          const isBooked = bookedKeys.includes(String(key));
 
           slotStatus[slot] = isBooked ? "booked" : "available";
         });
