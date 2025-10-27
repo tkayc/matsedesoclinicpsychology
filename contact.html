@@ -245,9 +245,15 @@
           const slotStatus = {};
           slots.forEach((slot) => {
             const key = slotKeyFromStringJS(slot);
-            slotStatus[slot] = bookedKeys.includes(String(key))
-              ? "booked"
-              : "available";
+            
+          // Compare numbers directly instead of strings
+        const isBooked = bookedKeys.some(bk => {
+        const bkStartEnd = bk.split("-").map(Number);
+        const keyStartEnd = key.split("-").map(Number);
+        return bkStartEnd[0] === keyStartEnd[0] && bkStartEnd[1] === keyStartEnd[1];
+        });
+        
+      slotStatus[slot] = isBooked ? "booked" : "available";
           });
           renderSlots(slotStatus);
         })
