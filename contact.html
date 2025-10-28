@@ -190,7 +190,7 @@
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyarXZAjjbszmaIZZdF1jjW11Wajg7B8JYx9eNNxattBVcsa8o65SBYtck30MHBWJKf/exec";
-
+                    
 // Availability ranges for each weekday
 const availability = {
   monday: [{ start: "17:30", end: "18:30" }],
@@ -286,7 +286,7 @@ flatpickr("#datePicker", {
     const container = document.getElementById("slots");
     container.innerHTML = "<p>Loading available slots<span class='spinner'></span></p>";
 
-    fetch(`${SCRIPT_URL}?date=${dateStr}`)
+      fetch(`${SCRIPT_URL}?date=${dateStr}`)
       .then(res => res.json())
       .then(data => {
         const bookedSlots = data.bookedSlots || [];
@@ -317,6 +317,7 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
     .catch(err => alert("Error: " + err));
 });
 </script>
+
 
 
 
