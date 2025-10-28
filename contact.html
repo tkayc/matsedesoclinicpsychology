@@ -187,9 +187,10 @@
   }
 </script>
 
+
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyarXZAjjbszmaIZZdF1jjW11Wajg7B8JYx9eNNxattBVcsa8o65SBYtck30MHBWJKf/exec";
-                    
+
 // Availability ranges for each weekday
 const availability = {
   monday: [{ start: "17:30", end: "18:30" }],
@@ -207,7 +208,6 @@ function generateSlots(ranges) {
   ranges.forEach(range => {
     const [sh, sm] = range.start.split(":").map(Number);
     const [eh, em] = range.end.split(":").map(Number);
-
     let start = new Date(0, 0, 0, sh, sm);
     const end = new Date(0, 0, 0, eh, em);
 
@@ -228,7 +228,7 @@ function formatTime(date) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-// Normalize slot string for comparison
+// Normalize slot string: consistent spacing around dash
 function normalizeSlot(slot) {
   return slot.replace(/\s*[-–—]\s*/g, " - ").trim();
 }
@@ -238,18 +238,14 @@ function renderSlots(slots, bookedSlots) {
   const container = document.getElementById("slots");
   container.innerHTML = "<p>Select a time slot:</p>";
 
-
   slots.forEach(slot => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = slot;
 
-
     const normSlot = normalizeSlot(slot);
     const isBooked = bookedSlots.some(b => normalizeSlot(b) === normSlot);
 
-
-    // Disable and grey if booked
     if (isBooked) {
       btn.disabled = true;
       btn.style.background = "lightgrey";
@@ -270,7 +266,7 @@ function renderSlots(slots, bookedSlots) {
   });
 }
 
-// Highlight the selected slot
+// Highlight selected slot
 function highlightSelected(selectedBtn) {
   document.querySelectorAll("#slots button").forEach(btn => {
     if (!btn.disabled) btn.style.background = "green";
@@ -278,32 +274,31 @@ function highlightSelected(selectedBtn) {
   selectedBtn.style.background = "darkblue";
 }
 
-// Initialize Flatpickr date picker
+// Flatpickr date picker
 flatpickr("#datePicker", {
   dateFormat: "Y-m-d",
   minDate: "today",
   onChange: function(selectedDates, dateStr) {
+    if (!selectedDates[0]) return;
     const day = selectedDates[0].toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
     const slots = generateSlots(availability[day] || []);
 
-    // Show loading
     const container = document.getElementById("slots");
     container.innerHTML = "<p>Loading available slots<span class='spinner'></span></p>";
 
-    // Fetch booked slots for this date
     fetch(`${SCRIPT_URL}?date=${dateStr}`)
       .then(res => res.json())
       .then(data => {
-        const bookedSlots = data.bookedSlots || []; // must return array of strings from Apps Script
+        const bookedSlots = data.bookedSlots || [];
         renderSlots(slots, bookedSlots);
       })
       .catch(() => {
-        renderSlots(slots, []); // if error, assume all available
+        renderSlots(slots, []);
       });
   }
 });
 
-// Handle form submission
+// Handle booking form submission
 document.getElementById("bookingForm").addEventListener("submit", function(e) {
   e.preventDefault();
   const formData = new FormData(this);
@@ -322,6 +317,7 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
     .catch(err => alert("Error: " + err));
 });
 </script>
+
 
 
 <!--end booking section-->
