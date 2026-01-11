@@ -61,269 +61,1362 @@
         </section>
 
        <!--booking section-->
-<section class="booking-section">
-  <div class="booking-container">
-    <div class="booking-image">
-      <img src="images/logo-blur.jpg" alt="Consulting session" />
-    </div>
-    <div class="booking-form">
-      <div style="margin-top: 20px">
-        <form id="bookingForm">
-          <label>First Name:</label>
-          <input type="text" name="firstname" required /><br />
+        <style>
+        .book-btn {
+          padding: 20px 40px;
+          font-size: 18px;
+          font-weight: 600;
+          border: none;
+          border-radius: 12px;
+          cursor: pointer;
+          color: white;
+          background: linear-gradient(135deg, #4f46e5, #9333ea);
+          box-shadow: 0 20px 40px rgba(99,102,241,.3);
+        }
 
-          <label>Last Name:</label>
-          <input type="text" name="lastname" required /><br />
+        .modal {
+          display: none;
+          position: fixed;
+          z-index: 9999;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.6);
+          overflow-y: auto;
+        }
 
-          <label>Email:</label>
-          <input type="email" name="email" required /><br />
+        .modal-content {
+          background: #fff;
+          margin: 40px auto;
+          padding: 0;
+          border-radius: 16px;
+          max-width: 700px;
+          position: relative;
+        }
 
-          <label>Phone Number:</label>
-          <input type="tel" name="phone" required /><br />
-
-          <label>Preferred Date:</label>
-          <input
-            id="datePicker"
-            type="text"
-            name="date"
-            required
-          /><br />
-
-          <div id="slots"></div>
-          <input type="hidden" id="timeSlot" name="timeSlot" required />
-
-          <label>Additional Information:</label>
-          <textarea name="extra"></textarea><br />
-
-          <button type="submit" id="submitBtn">Book Appointment</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</section>
-
-<style>
-  button[type="submit"] {
-    background: #0077cc;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
-    margin-top: 10px;
-    display: inline-block;
-  }
-
-  button[type="submit"]:hover {
-    background: #005fa3;
-    transform: translateY(-2px);
-  }
-
-  button[type="submit"]:active {
-    background: #004c82;
-    transform: translateY(0);
-  }
-
-  #slots .spinner {
-    border: 4px solid #f3f3f3; /* Light grey */
-    border-top: 4px solid #0077cc; /* Blue */
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    animation: spin 1s linear infinite;
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 10px;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
-/>
-
-<script>
-  // ===== Utility functions for parsing =====
-  function parseTimeToMinutesJS(s) {
-    if (!s && s !== 0) return null;
-    s = String(s).trim();
-    let m = s.match(/(\d{1,2}):(\d{2})/);
-    if (m) return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
-    m = s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
-    if (m) {
-      let hh = parseInt(m[1], 10),
-        mm = m[2] ? parseInt(m[2], 10) : 0;
-      const ap = m[3].toLowerCase();
-      if (ap === "am" && hh === 12) hh = 0;
-      if (ap === "pm" && hh < 12) hh += 12;
-      return hh * 60 + mm;
-    }
-    const dt = new Date(s);
-    if (!isNaN(dt)) return dt.getHours() * 60 + dt.getMinutes();
-    return null;
-  }
-
-  function slotKeyFromStringJS(slotStr) {
-    if (!slotStr) return null;
-    slotStr = slotStr.trim(); // remove extra spaces
-    const parts = slotStr.split(/[-–—]/);
-    if (parts.length < 2) return null;
-    const s = parseTimeToMinutesJS(parts[0].trim());
-    const e = parseTimeToMinutesJS(parts[1].trim());
-    if (s === null || e === null) return null;
-    return s + "-" + e;
-  }
-</script>
-
-
-<script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyarXZAjjbszmaIZZdF1jjW11Wajg7B8JYx9eNNxattBVcsa8o65SBYtck30MHBWJKf/exec";
-                    
-// Availability ranges for each weekday
-const availability = {
-  monday: [{ start: "17:30", end: "18:30" }],
-  tuesday: [{ start: "17:30", end: "18:30" }],
-  wednesday: [{ start: "16:15", end: "18:00" }],
-  thursday: [{ start: "16:15", end: "18:00" }],
-  friday: [{ start: "16:15", end: "18:00" }],
-  saturday: [{ start: "09:00", end: "15:00" }],
-  sunday: [{ start: "15:00", end: "16:00" }],
-};
-
-// Generate slots for a day based on availability
-function generateSlots(ranges) {
-  const slots = [];
-  ranges.forEach(range => {
-    const [sh, sm] = range.start.split(":").map(Number);
-    const [eh, em] = range.end.split(":").map(Number);
-    let start = new Date(0, 0, 0, sh, sm);
-    const end = new Date(0, 0, 0, eh, em);
-
-    while (start < end) {
-      const slotStart = new Date(start);
-      const slotEnd = new Date(start);
-      slotEnd.setHours(slotEnd.getHours() + 1);
-      if (slotEnd > end) slotEnd = end;
-      slots.push(formatTime(slotStart) + " - " + formatTime(slotEnd));
-      start = slotEnd;
-    }
-  });
-  return slots;
-}
-
-// Format Date object to HH:mm
-function formatTime(date) {
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
-// Normalize slot string: consistent spacing around dash
-function normalizeSlot(slot) {
-  return slot.replace(/\s*[-–—]\s*/g, " - ").trim();
-}
-
-// Render slots on the page
-function renderSlots(slots, bookedSlots) {
-  const container = document.getElementById("slots");
-  container.innerHTML = "<p>Select a time slot:</p>";
-
-  slots.forEach(slot => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.textContent = slot;
-
-    const normSlot = normalizeSlot(slot);
-    const isBooked = bookedSlots.some(b => normalizeSlot(b) === normSlot);
-
-    if (isBooked) {
-      btn.disabled = true;
-      btn.style.background = "lightgrey";
-      btn.style.cursor = "not-allowed";
-    } else {
-      btn.style.background = "green";
-      btn.style.color = "white";
-      btn.style.margin = "5px";
-      btn.style.padding = "10px";
-      btn.style.borderRadius = "8px";
-      btn.style.cursor = "pointer";
-      btn.onclick = () => {
-        document.getElementById("timeSlot").value = slot;
-        highlightSelected(btn);
-      };
-    }
-    container.appendChild(btn);
-  });
-}
-
-// Highlight selected slot
-function highlightSelected(selectedBtn) {
-  document.querySelectorAll("#slots button").forEach(btn => {
-    if (!btn.disabled) btn.style.background = "green";
-  });
-  selectedBtn.style.background = "darkblue";
-}
-
-// Flatpickr date picker
-flatpickr("#datePicker", {
-  dateFormat: "Y-m-d",
-  minDate: "today",
-  onChange: function(selectedDates, dateStr) {
-    if (!selectedDates[0]) return;
-    const day = selectedDates[0].toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
-    const slots = generateSlots(availability[day] || []);
-
-    const container = document.getElementById("slots");
-    container.innerHTML = "<p>Loading available slots<span class='spinner'></span></p>";
-
-      fetch(`${SCRIPT_URL}?date=${dateStr}`)
-      .then(res => res.json())
-      .then(data => {
-        const bookedSlots = data.bookedSlots || [];
-        renderSlots(slots, bookedSlots);
-      })
-      .catch(() => {
-        renderSlots(slots, []);
-      });
-  }
-});
-
-// Handle booking form submission
-document.getElementById("bookingForm").addEventListener("submit", function(e) {
-  e.preventDefault();
-  const formData = new FormData(this);
-
-  fetch(SCRIPT_URL, { method: "POST", body: formData })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert("Booking confirmed!");
-        this.reset();
-        document.getElementById("slots").innerHTML = "";
-      } else {
-        alert("Error: " + data.message);
+        .close-btn {
+          position: absolute;
+          top: 12px;
+          right: 16px;
+          font-size: 28px;
+          cursor: pointer;
+          color: #64748b;
       }
-    })
-    .catch(err => alert("Error: " + err));
-});
-</script>
+
+        </style>
+        <button class="book-btn" onclick="openModal()">BOOK NOW</button>
 
 
 
-
-<!--end booking section-->
-
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"/>
       </main>
+
+      <!--modal implement--> 
+      <div id="bookingModal" class="modal">
+        <div class="modal-content">
+          <span class="close-btn" onclick="closeModal()">&times;</span>
+
+          <!-- 🔽 PASTE YOUR ENTIRE BOOKING SYSTEM HTML HERE 🔽 -->
+          <!-- EVERYTHING from <div class="container"> ... </div> -->
+
+          <div class="container">
+        <!-- Header -->
+            <div class="header">
+                <div class="header-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                        <path d="M9 16l2 2 4-4"></path>
+                    </svg>
+                </div>
+                <h1>Book Your Appointment</h1>
+                <p>Select your preferred date and time</p>
+            </div>
+
+            <!-- Progress Steps -->
+            <div class="progress-steps">
+                <button class="step active" id="step-btn-1" onclick="goToStep(1)">
+                    <span class="step-number">1</span>
+                    <span>Your Details</span>
+                </button>
+                <div class="step-connector" id="connector-1"></div>
+                <button class="step inactive" id="step-btn-2" onclick="goToStep(2)">
+                    <span class="step-number">2</span>
+                    <span>Select Date</span>
+                </button>
+                <div class="step-connector" id="connector-2"></div>
+                <button class="step inactive" id="step-btn-3" onclick="goToStep(3)">
+                    <span class="step-number">3</span>
+                    <span>Select Time</span>
+                </button>
+            </div>
+
+            <!-- Main Card -->
+            <div class="card">
+                <div class="card-content">
+                    <!-- Step 1: Personal Details -->
+                    <div class="step-content active" id="step-1">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                Full Name
+                            </label>
+                            <input type="text" class="form-input" id="client_name" placeholder="Enter your full name">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                                Email Address
+                            </label>
+                            <input type="email" class="form-input" id="client_email" placeholder="your@email.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                </svg>
+                                Phone Number
+                            </label>
+                            <input type="tel" class="form-input" id="client_phone" placeholder="+1 (555) 000-0000">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Additional Notes <span class="optional-text">(optional)</span>
+                            </label>
+                            <textarea class="form-input" id="notes" placeholder="Any special requests or information..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Date Selection -->
+                    <div class="step-content" id="step-2">
+                        <div class="section-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Select Date
+                        </div>
+
+                        <div class="calendar-container">
+                            <div class="calendar">
+                                <div class="calendar-header">
+                                    <button class="calendar-nav-btn" onclick="previousMonth()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="15 18 9 12 15 6"></polyline>
+                                        </svg>
+                                    </button>
+                                    <span class="calendar-title" id="calendar-title">January 2025</span>
+                                    <button class="calendar-nav-btn" onclick="nextMonth()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="calendar-weekdays">
+                                    <div class="calendar-weekday">Su</div>
+                                    <div class="calendar-weekday">Mo</div>
+                                    <div class="calendar-weekday">Tu</div>
+                                    <div class="calendar-weekday">We</div>
+                                    <div class="calendar-weekday">Th</div>
+                                    <div class="calendar-weekday">Fr</div>
+                                    <div class="calendar-weekday">Sa</div>
+                                </div>
+                                <div class="calendar-days" id="calendar-days">
+                                    <!-- Days will be generated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="badge-container" id="selected-date-badge" style="display: none;">
+                            <span class="selected-badge">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <span id="selected-date-text"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Time Selection -->
+                    <div class="step-content" id="step-3">
+                        <div class="section-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            Select Time Slot
+                        </div>
+
+                        <div class="time-slots" id="time-slots">
+                            <!-- Time slots will be generated by JavaScript -->
+                        </div>
+
+                        <div class="badge-container" id="selected-time-badge" style="display: none; margin-top: 24px;">
+                            <span class="selected-badge">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <span id="selected-time-text"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation Screen -->
+                    <div class="step-content" id="step-confirmation">
+                        <div class="confirmation">
+                            <div class="confirmation-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <h2>Booking Confirmed!</h2>
+                            <p>A confirmation email has been sent to your inbox.</p>
+
+                            <div class="confirmation-details">
+                                <h3>Booking Details</h3>
+                                <div class="detail-row">
+                                    <div class="detail-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </div>
+                                    <span id="confirm-name"></span>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                            <polyline points="22,6 12,13 2,6"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span id="confirm-email"></span>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                                        </svg>
+                                    </div>
+                                    <span id="confirm-date"></span>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 6 12 12 16 14"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span id="confirm-time"></span>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-ghost" onclick="resetBooking()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                                    <polyline points="12 19 5 12 12 5"></polyline>
+                                </svg>
+                                Make Another Booking
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Navigation (hidden on confirmation) -->
+                    <div class="navigation" id="navigation">
+                        <button class="btn btn-ghost" id="back-btn" onclick="previousStep()" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                            Back
+                        </button>
+                        <button class="btn btn-primary" id="next-btn" onclick="nextStep()" disabled>
+                            Continue
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+          </div>
+
+        
+        <script>
+
+            const API_URL = "https://script.google.com/macros/s/AKfycbz94TaxjjHcZurrfBi8u1BMR8RxbmRGKpYv05eyWMcJm5kiqWKysN-Lh_pCDLaXrRHR/exec";
+            let bookedSlots = {};
+
+            // State
+            let currentStep = 1;
+            let selectedDate = null;
+            let selectedSlot = null;
+            let currentMonth = new Date().getMonth();
+            let currentYear = new Date().getFullYear();
+
+            // Simulated booked slots (in real app, this would come from database)
+            // Format: { 'YYYY-MM-DD': ['9:00 AM - 10:00 AM', '2:00 PM - 3:00 PM'] }
+            //const bookedSlots = {
+              // '2025-01-20': ['9:00 AM - 10:00 AM', '11:00 AM - 12:00 PM'],
+              // '2025-01-21': ['2:00 PM - 3:00 PM', '4:00 PM - 5:00 PM'],
+              //  '2025-01-22': ['10:00 AM - 11:00 AM'],
+          //  };
+
+            async function loadBookedSlots() {
+                const res = await fetch(API_URL);
+                bookedSlots = await res.json();
+                renderTimeSlots();
+            }
+
+            /*
+            // Time slots
+            const timeSlots = [
+                { start: '9:00 AM', end: '10:00 AM' },
+                { start: '10:00 AM', end: '11:00 AM' },
+                { start: '11:00 AM', end: '12:00 PM' },
+                { start: '12:00 PM', end: '1:00 PM' },
+                { start: '1:00 PM', end: '2:00 PM' },
+                { start: '2:00 PM', end: '3:00 PM' },
+                { start: '3:00 PM', end: '4:00 PM' },
+                { start: '4:00 PM', end: '5:00 PM' },
+                { start: '5:00 PM', end: '6:00 PM' },
+            ];*/
+
+
+            //new additive header
+            function generateSlotsForDate(date) {
+                const slots = [];
+                const month = date.getMonth(); // 0 = Jan
+                const day = date.getDay();     // 0 = Sunday
+
+                // JAN–MAR (all days)
+                if (month <= 2) {
+                    return [
+                    "11:00 AM - 12:00 PM",
+                    "12:00 PM - 1:00 PM",
+                    "1:00 PM - 2:00 PM",
+                    "2:00 PM - 3:00 PM",
+                    "3:00 PM - 4:00 PM"
+                    ];
+                }
+
+                // APR–DEC (by weekday)
+                const rules = {
+                    1: [{ start: "17:30", end: "18:30" }], // Monday
+                    2: [{ start: "17:30", end: "18:30" }], // Tuesday
+                    3: [{ start: "16:15", end: "17:15" }, { start: "17:15", end: "18:00" }], // Wednesday
+                    4: [{ start: "16:15", end: "17:15" }, { start: "17:15", end: "18:00" }], // Thursday
+                    5: [{ start: "16:15", end: "17:15" }, { start: "17:15", end: "18:00" }], // Friday
+                    6: [{ start: "09:00", end: "10:00" },
+                        { start: "10:00", end: "11:00" },
+                        { start: "11:00", end: "12:00" },
+                        { start: "12:00", end: "13:00" },
+                        { start: "13:00", end: "14:00" },
+                        { start: "14:00", end: "15:00" },], // Saturday
+                    0: [{ start: "15:00", end: "16:00" }]  // Sunday
+                };
+
+                const dayRules = rules[day] || [];
+
+                dayRules.forEach(r => {
+                    slots.push(`${to12Hour(r.start)} - ${to12Hour(r.end)}`);
+                });
+
+                return slots;
+            }
+
+            function to12Hour(time24) {
+                const [h, m] = time24.split(":");
+                const hour = parseInt(h);
+                const suffix = hour >= 12 ? "PM" : "AM";
+                const hour12 = hour % 12 || 12;
+                return `${hour12}:${m} ${suffix}`;
+            }
+
+
+            // Initialize
+            document.addEventListener('DOMContentLoaded', function() {
+                renderCalendar();
+                renderTimeSlots();
+                setupFormValidation();
+            });
+
+            // Form validation
+            function setupFormValidation() {
+                const nameInput = document.getElementById('client_name');
+                const emailInput = document.getElementById('client_email');
+
+                nameInput.addEventListener('input', validateStep1);
+                emailInput.addEventListener('input', validateStep1);
+            }
+
+            function validateStep1() {
+                const name = document.getElementById('client_name').value.trim();
+                const email = document.getElementById('client_email').value.trim();
+                const isValid = name.length > 0 && email.length > 0 && email.includes('@');
+                document.getElementById('next-btn').disabled = !isValid;
+            }
+
+            // Calendar functions
+            function renderCalendar() {
+                const daysContainer = document.getElementById('calendar-days');
+                const titleElement = document.getElementById('calendar-title');
+                
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                  'July', 'August', 'September', 'October', 'November', 'December'];
+                
+                titleElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+                
+                const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+                const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                let html = '';
+                
+                // Empty cells for days before the first day of the month
+                for (let i = 0; i < firstDay; i++) {
+                    html += '<button class="calendar-day other-month" disabled></button>';
+                }
+                
+                // Days of the month
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(currentYear, currentMonth, day);
+                    const dateStr = formatDateForComparison(date);
+                    const isPast = date < today;
+                    const isToday = date.getTime() === today.getTime();
+                    const isSelected = selectedDate && formatDateForComparison(selectedDate) === dateStr;
+                    
+                    let classes = 'calendar-day';
+                    if (isPast) classes += ' disabled';
+                    if (isToday) classes += ' today';
+                    if (isSelected) classes += ' selected';
+                    
+                    html += `<button class="${classes}" ${isPast ? 'disabled' : ''} onclick="selectDate(${currentYear}, ${currentMonth}, ${day})">${day}</button>`;
+                }
+                
+                daysContainer.innerHTML = html;
+            }
+
+            function previousMonth() {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar();
+            }
+
+            function nextMonth() {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar();
+            }
+
+            
+            function selectDate(year, month, day) {
+                selectedDate = new Date(year, month, day);
+                selectedSlot = null; // Reset time slot when date changes
+                renderCalendar();
+                renderTimeSlots();
+                loadBookedSlots();
+
+                
+                // Show selected date badge
+                const badge = document.getElementById('selected-date-badge');
+                const text = document.getElementById('selected-date-text');
+                badge.style.display = 'block';
+                text.textContent = formatDateDisplay(selectedDate);
+                
+                // Enable next button
+                document.getElementById('next-btn').disabled = false;
+                
+                // Hide time badge
+                document.getElementById('selected-time-badge').style.display = 'none';
+            }
+
+
+
+            // Time slots functions
+            function renderTimeSlots() {
+                const container = document.getElementById('time-slots');
+                const dateStr = selectedDate ? formatDateForComparison(selectedDate) : null;
+                const bookedForDate = dateStr && bookedSlots[dateStr] ? bookedSlots[dateStr] : [];
+                
+                let html = '';
+
+                const slots = selectedDate ? generateSlotsForDate(selectedDate) : [];
+
+                    slots.forEach(slotLabel => {
+                    //const slotLabel = `${slot.start} - ${slot.end}`;
+                    const isBooked = bookedForDate.includes(slotLabel);
+                    const isSelected = selectedSlot === slotLabel;
+                    
+                    let classes = 'time-slot';
+                    if (isBooked) classes += ' disabled';
+                    if (isSelected) classes += ' selected';
+                    
+                    html += `
+                        <div class="${classes}" ${isBooked ? '' : `onclick="selectSlot('${slotLabel}')"`}>
+                            <div class="time-slot-start">${slotLabel}</div>
+                            ${isSelected ? `
+                                <div class="time-slot-check">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                            ` : ''}
+                            ${isBooked ? '<span class="time-slot-booked">Booked</span>' : ''}
+                        </div>
+                    `;
+                });
+                
+              /*  timeSlots.forEach(slot => {
+                    const slotLabel = `${slot.start} - ${slot.end}`;
+                    const isBooked = bookedForDate.includes(slotLabel);
+                    const isSelected = selectedSlot === slotLabel;
+                    
+                    let classes = 'time-slot';
+                    if (isBooked) classes += ' disabled';
+                    if (isSelected) classes += ' selected';
+                    
+                    html += `
+                        <div class="${classes}" ${isBooked ? '' : `onclick="selectSlot('${slotLabel}')"`}>
+                            <div class="time-slot-start">${slot.start}</div>
+                            <div class="time-slot-end">to ${slot.end}</div>
+                            ${isSelected ? `
+                                <div class="time-slot-check">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                            ` : ''}
+                            ${isBooked ? '<span class="time-slot-booked">Booked</span>' : ''}
+                        </div>
+                    `;
+                });*/
+                
+                container.innerHTML = html;
+            }
+
+            function selectSlot(slotLabel) {
+                selectedSlot = slotLabel;
+                renderTimeSlots();
+                
+                // Show selected time badge
+                const badge = document.getElementById('selected-time-badge');
+                const text = document.getElementById('selected-time-text');
+                badge.style.display = 'block';
+                text.textContent = slotLabel;
+                
+                // Update button to "Confirm Booking"
+                const nextBtn = document.getElementById('next-btn');
+                nextBtn.disabled = false;
+                nextBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Confirm Booking
+                `;
+                nextBtn.classList.remove('btn-primary');
+                nextBtn.classList.add('btn-gradient');
+            }
+
+            // Navigation functions
+            function goToStep(step) {
+                if (step < currentStep) {
+                    currentStep = step;
+                    updateUI();
+                }
+            }
+
+            function nextStep() {
+                if (currentStep < 3) {
+                    currentStep++;
+                    updateUI();
+                } else {
+                    // Submit booking
+                    submitBooking();
+                }
+            }
+
+            function previousStep() {
+                if (currentStep > 1) {
+                    currentStep--;
+                    updateUI();
+                }
+            }
+
+            function updateUI() {
+                // Update step content visibility
+                document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                
+                // Update step buttons
+                for (let i = 1; i <= 3; i++) {
+                    const btn = document.getElementById(`step-btn-${i}`);
+                    btn.classList.remove('active', 'completed', 'inactive');
+                    
+                    if (i === currentStep) {
+                        btn.classList.add('active');
+                    } else if (i < currentStep) {
+                        btn.classList.add('completed');
+                    } else {
+                        btn.classList.add('inactive');
+                    }
+                }
+                
+                // Update connectors
+                document.getElementById('connector-1').classList.toggle('active', currentStep > 1);
+                document.getElementById('connector-2').classList.toggle('active', currentStep > 2);
+                
+                // Update back button
+                document.getElementById('back-btn').disabled = currentStep === 1;
+                
+                // Update next button
+                const nextBtn = document.getElementById('next-btn');
+                nextBtn.classList.remove('btn-gradient');
+                nextBtn.classList.add('btn-primary');
+                
+                if (currentStep === 1) {
+                    validateStep1();
+                    nextBtn.innerHTML = `Continue <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+                } else if (currentStep === 2) {
+                    nextBtn.disabled = !selectedDate;
+                    nextBtn.innerHTML = `Continue <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+                } else if (currentStep === 3) {
+                    nextBtn.disabled = !selectedSlot;
+                    if (selectedSlot) {
+                        nextBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Confirm Booking`;
+                        nextBtn.classList.remove('btn-primary');
+                        nextBtn.classList.add('btn-gradient');
+                    } else {
+                        nextBtn.innerHTML = `Confirm Booking <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+                    }
+                }
+            }
+
+            function submitBooking() {
+                const payload = {
+                    name: client_name.value,
+                    email: client_email.value,
+                    phone: client_phone.value,
+                    notes: notes.value,
+                    date: formatDateForComparison(selectedDate),
+                    slot: selectedSlot
+                };
+
+                fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+          
+
+
+                // UI confirmation (UNCHANGED)
+                document.getElementById('confirm-name').textContent = payload.name;
+                document.getElementById('confirm-email').textContent = payload.email;
+                document.getElementById('confirm-date').textContent = formatDateDisplay(selectedDate);
+                document.getElementById('confirm-time').textContent = selectedSlot;
+
+                document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+                document.getElementById('step-confirmation').classList.add('active');
+                document.getElementById('navigation').style.display = 'none';
+                document.querySelector('.progress-steps').style.display = 'none';
+            }
+
+
+            function resetBooking() {
+                currentStep = 1;
+                selectedDate = null;
+                selectedSlot = null;
+                
+                // Reset form
+                document.getElementById('client_name').value = '';
+                document.getElementById('client_email').value = '';
+                document.getElementById('client_phone').value = '';
+                document.getElementById('notes').value = '';
+                
+                // Reset badges
+                document.getElementById('selected-date-badge').style.display = 'none';
+                document.getElementById('selected-time-badge').style.display = 'none';
+                
+                // Show navigation and steps
+                document.getElementById('navigation').style.display = 'flex';
+                document.querySelector('.progress-steps').style.display = 'flex';
+                
+                // Render calendar and slots
+                renderCalendar();
+                renderTimeSlots();
+                
+                updateUI();
+            }
+
+            // Helper functions
+            function formatDateForComparison(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            function formatDateDisplay(date) {
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+                return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+            }
+
+
+            function openModal() {
+                document.getElementById("bookingModal").style.display = "block";
+                document.body.style.overflow = "hidden"; // prevent background scroll
+            }
+
+            function closeModal() {
+                document.getElementById("bookingModal").style.display = "none";
+                document.body.style.overflow = "auto";
+            }
+
+            // Close when clicking outside the modal
+            window.addEventListener("click", function (e) {
+                const modal = document.getElementById("bookingModal");
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        </script>
+
+        </div>
+      </div>
+
+      <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #eef2ff 100%);
+            min-height: 100vh;
+            padding: 48px 16px;
+        }
+
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #6366f1 0%, #9333ea 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .header-icon svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+            stroke: white;
+            fill: none;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: #64748b;
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .step.active {
+            background: #4f46e5;
+            color: white;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .step.completed {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .step.inactive {
+            background: #f1f5f9;
+            color: #94a3b8;
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .step-connector {
+            width: 32px;
+            height: 2px;
+            background: #e2e8f0;
+        }
+
+        .step-connector.active {
+            background: #c7d2fe;
+        }
+
+        /* Main Card */
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-content {
+            padding: 32px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        .form-label svg {
+            width: 16px;
+            height: 16px;
+            stroke: #6366f1;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #94a3b8;
+        }
+
+        textarea.form-input {
+            height: 100px;
+            padding: 12px 16px;
+            resize: none;
+        }
+
+        .optional-text {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        /* Calendar Styles */
+        .calendar-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .calendar {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .calendar-title {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calendar-nav button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .calendar-nav button:hover {
+            background: #eef2ff;
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+            padding: 8px 0;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #1e293b;
+        }
+
+        .calendar-day:hover:not(.disabled):not(.selected) {
+            background: #eef2ff;
+        }
+
+        .calendar-day.today {
+            background: #eef2ff;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+
+        .calendar-day.selected {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .calendar-day.disabled {
+            color: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.other-month {
+            color: #cbd5e1;
+        }
+
+        /* Selected Date Badge */
+        .selected-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #eef2ff;
+            color: #4338ca;
+            border-radius: 9999px;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 0 auto;
+        }
+
+        .badge-container {
+            text-align: center;
+        }
+
+        /* Time Slots */
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 16px;
+        }
+
+        .section-label svg {
+            width: 16px;
+            height: 16px;
+            stroke: #6366f1;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .time-slot {
+            position: relative;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .time-slot:hover:not(.disabled):not(.selected) {
+            border-color: #a5b4fc;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .time-slot.selected {
+            background: #4f46e5;
+            border-color: #4f46e5;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .time-slot.disabled {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .time-slot-start {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+        }
+
+        .time-slot.selected .time-slot-start {
+            color: white;
+        }
+
+        .time-slot.disabled .time-slot-start {
+            color: #94a3b8;
+        }
+
+        .time-slot-end {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .time-slot.selected .time-slot-end {
+            color: #c7d2fe;
+        }
+
+        .time-slot.disabled .time-slot-end {
+            color: #94a3b8;
+        }
+
+        .time-slot-check {
+            position: absolute;
+            top: 50%;
+            right: 16px;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .time-slot-check svg {
+            width: 16px;
+            height: 16px;
+            stroke: #4f46e5;
+        }
+
+        .time-slot-booked {
+            position: absolute;
+            top: 50%;
+            right: 16px;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* Navigation */
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #64748b;
+        }
+
+        .btn-ghost:hover {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .btn-ghost:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+
+        .btn-primary:disabled {
+            background: #a5b4fc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+            color: white;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-gradient:hover {
+            opacity: 0.9;
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+            margin-top: 32px;
+        }
+
+        /* Confirmation Screen */
+        .confirmation {
+            text-align: center;
+            padding: 32px 0;
+        }
+
+        .confirmation-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4ade80 0%, #10b981 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 32px;
+            box-shadow: 0 10px 40px rgba(74, 222, 128, 0.3);
+        }
+
+        .confirmation-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: white;
+        }
+
+        .confirmation h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .confirmation p {
+            color: #64748b;
+            margin-bottom: 32px;
+        }
+
+        .confirmation-details {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            margin: 0 auto 32px;
+        }
+
+        .confirmation-details h3 {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #475569;
+            margin-bottom: 12px;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-icon {
+            width: 32px;
+            height: 32px;
+            background: #e0e7ff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .detail-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke: #4f46e5;
+        }
+
+        /* Step Content */
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .step span:not(.step-number) {
+                display: none;
+            }
+
+            .time-slots {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+      </style>
+
 
       <!--start footer section-->
       <footer class="footer-multi">
